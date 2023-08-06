@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ContactAPISqlite.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ContactAPISqlite.Controllers
 {
     [ApiController]
+    [Tags("Contact")]
     [Route("api/contacts")]
     [Produces("application/json")]
     public class ContactApiController : ControllerBase
@@ -18,6 +16,7 @@ namespace ContactAPISqlite.Controllers
         public ContactApiController(ContactDbContext context) => _context = context;
 
         [HttpGet]
+        [SwaggerOperation("Get")]
         [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(IEnumerable<Contact>), StatusCodes.Status200OK)]
         public ActionResult Get()
@@ -29,6 +28,7 @@ namespace ContactAPISqlite.Controllers
         }
 
         [HttpPost]
+        [SwaggerOperation("Create")]
         [ProducesResponseType(typeof(Contact), StatusCodes.Status201Created)]
         public ActionResult Create(Contact contact)
         {
@@ -38,6 +38,7 @@ namespace ContactAPISqlite.Controllers
             return CreatedAtAction(nameof(Get), contact);
         }
 
+        [SwaggerOperation("GetContact")]
         [HttpGet("{id:int}", Name = "GetContact")]
         [ProducesResponseType(typeof(Contact), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(void), StatusCodes.Status404NotFound)]
@@ -52,6 +53,7 @@ namespace ContactAPISqlite.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [SwaggerOperation("Update")]
         [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
         public ActionResult Update(int id, [FromBody] Contact contact)
@@ -68,6 +70,7 @@ namespace ContactAPISqlite.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [SwaggerOperation("Delete")]
         [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(void), StatusCodes.Status400BadRequest)]
         public ActionResult Delete(int id)
@@ -75,7 +78,12 @@ namespace ContactAPISqlite.Controllers
             if (!ContactExists(id))
                 return BadRequest();
 
-            return Ok(_context.Contacts.Find(id));
+            Contact contact = _context.Contacts.Find(id);
+
+            _context.Remove(contact);
+            _context.SaveChanges();
+
+            return NoContent();
         }
 
         private bool ContactExists(int id) => _context.Contacts.Any(c => c.Id == id);

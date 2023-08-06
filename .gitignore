@@ -367,3 +367,6 @@ FodyWeavers.xsd
 
 # Ignorando arquivos do WebView2
 KioskApp/Contents/Runtime/
+
+# Ignorando configuração do VSCode
+.vscode/
